@@ -1,0 +1,264 @@
+esphome:
+  name: "${lower_devicename}"
+  platform: ESP8266
+  board: d1_mini
+  includes:
+    - sdm/SDM_Config_User.h
+    - sdm/SDM.h
+    - sdm/sdm_esphome.h
+
+substitutions:
+  lower_devicename: "sdm630"
+  devicename: "SDM630" 
+  config_version: "v2021.05.16.001"
+  wifi_fast_connect: "false"
+  wifi_reboot_timeout: 0s
+  accuracy: "2"
+
+wifi
+  ssid: "wifi_name" 
+  password: "wifi_pass"
+  reboot_timeout: $wifi_reboot_timeout
+  power_save_mode: none
+  fast_connect: $wifi_fast_connect
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "${devicename} Fallback Hotspot"
+    password: "0123456789"
+
+captive_portal:
+logger:
+  baud_rate: 0
+  # level: VERY_VERBOSE
+  esp8266_store_log_strings_in_flash: False
+
+# Enable Home Assistant API
+api:
+  password: "pass"
+
+ota:
+  password: "pass"
+
+web_server:
+  port: 80
+
+
+time:
+  - platform: homeassistant
+
+uart:
+  tx_pin: TX #D7 policna 
+  rx_pin: RX #D6 policna
+  baud_rate: 9600 #SDM630 - 9600 , SDM120 - 4800 
+  stop_bits: 1
+
+sensor:
+  - platform: wifi_signal
+    name: "${devicename} WiFi Signal Sensor"
+    update_interval: 60s
+  - platform: uptime
+    name: "${devicename} Uptime"
+    id: uptime_s
+    update_interval: 15s
+
+
+  - platform: custom
+    lambda: |-
+      auto sdm_sensors = new SDMComponent();
+      App.register_component(sdm_sensors);
+      return {
+      sdm_sensors->voltage_sensorAVG ,
+      sdm_sensors->voltage_sensorL1 ,
+      sdm_sensors->voltage_sensorL2 ,
+      sdm_sensors->voltage_sensorL3 ,
+      sdm_sensors->current_sensorSUM ,
+      sdm_sensors->current_sensorL1 ,
+      sdm_sensors->current_sensorL2 ,
+      sdm_sensors->current_sensorL3 ,
+      sdm_sensors->current_sensorAVG ,
+      sdm_sensors->power_sensorSUM ,
+      sdm_sensors->power_sensorL1 ,
+      sdm_sensors->power_sensorL2 ,
+      sdm_sensors->power_sensorL3 ,
+      sdm_sensors->export_active_sensorSUM ,
+      sdm_sensors->export_active_sensorL1 ,
+      sdm_sensors->export_active_sensorL2 ,
+      sdm_sensors->export_active_sensorL3 ,
+      sdm_sensors->total_energy_sensorL1 ,
+      sdm_sensors->total_energy_sensorL2 ,
+      sdm_sensors->total_energy_sensorL3 ,
+      sdm_sensors->import_total ,
+      sdm_sensors->hz_sensor };
+
+
+    sensors:
+    - name: "Voltage AVG"
+      unit_of_measurement: V
+      icon: "mdi:chart-bell-curve"
+      device_class: "voltage"
+      accuracy_decimals: ${accuracy}
+    - name: "Voltage L1"
+      unit_of_measurement: V
+      icon: "mdi:current-ac"
+      device_class: "voltage"
+      accuracy_decimals: ${accuracy}
+    - name: "Voltage L2"
+      unit_of_measurement: V
+      icon: "mdi:current-ac"
+      device_class: "voltage"
+      accuracy_decimals: ${accuracy}
+    - name: "Voltage L3"
+      unit_of_measurement: V
+      icon: "mdi:current-ac"
+      device_class: "voltage"
+      accuracy_decimals: ${accuracy}
+
+    - name: "Current SUM"
+      unit_of_measurement: A
+      icon: "mdi:chart-bell-curve"
+      device_class: "current"
+      accuracy_decimals: ${accuracy}
+    - name: "Current L1"
+      unit_of_measurement: A
+      icon: "mdi:current-ac"
+      device_class: "current"
+      accuracy_decimals: ${accuracy}
+    - name: "Current L2"
+      unit_of_measurement: A
+      icon: "mdi:current-ac"
+      device_class: "current"
+      accuracy_decimals: ${accuracy}
+    - name: "Current L3"
+      unit_of_measurement: A
+      icon: "mdi:current-ac"
+      device_class: "current"
+      accuracy_decimals: ${accuracy}
+    - name: "Current AVG"
+      unit_of_measurement: A
+      icon: "mdi:chart-bell-curve"
+      device_class: "current"
+      accuracy_decimals: ${accuracy}  
+
+    - name: "Power SUM"
+      unit_of_measurement: W
+      icon: "mdi:chart-bell-curve"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}
+    - name: "Power L1"
+      unit_of_measurement: W
+      icon: "mdi:flash"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}
+    - name: "Power L2"
+      unit_of_measurement: W
+      icon: "mdi:flash"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}
+    - name: "Power L3"
+      unit_of_measurement: W
+      icon: "mdi:flash"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}       
+    
+    - name: "Power Export Active SUM"
+      unit_of_measurement: Wh
+      icon: "mdi:chart-bell-curve"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}
+    - name: "Power Export Active L1"
+      unit_of_measurement: kWh
+      icon: "mdi:gauge"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}
+    - name: "Power Export Active L2"
+      unit_of_measurement: kWh
+      icon: "mdi:gauge"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}
+    - name: "Power Export Active L3"
+      unit_of_measurement: kWh
+      icon: "mdi:gauge"
+      device_class: "power"
+      accuracy_decimals: ${accuracy}
+
+    - name: "Total Energy L1"
+      unit_of_measurement: kWh
+      icon: "mdi:gauge"
+      device_class: "energy"
+      accuracy_decimals: ${accuracy}
+    - name: "Total Energy L2"
+      unit_of_measurement: kWh
+      icon: "mdi:gauge"
+      device_class: "energy"
+      accuracy_decimals: ${accuracy}
+    - name: "Total Energy L3"
+      unit_of_measurement: kWh
+      icon: "mdi:gauge"
+      device_class: "energy"
+      accuracy_decimals: ${accuracy}      
+    - name: "Total import"
+      unit_of_measurement: kWh
+      icon: "mdi:chart-bell-curve"
+      device_class: "energy"
+      accuracy_decimals: ${accuracy}
+
+    - name: "Frequency"
+      unit_of_measurement: Hz
+      icon: "mdi:frequency"
+
+
+text_sensor:
+  - platform: template
+    name: "${devicename} Config Version"
+    icon: mdi:information-outline
+    lambda: |-
+      return {"${config_version}"};
+  - platform: version
+    name: "${devicename} Esphome Version"
+    icon: mdi:information-outline
+  - platform: wifi_info
+    ip_address:
+      name: "${devicename} IP Address"
+      icon: mdi:ip
+    ssid:
+      name: "${devicename} Connected SSID"
+      icon: mdi:wifi
+    bssid:
+      name: "${devicename} Connected BSSID"
+    mac_address:
+      name: "${devicename} Mac Wifi Address"
+  - platform: template
+    name: "${devicename} Uptime (formatted)"
+    lambda: |-
+        uint32_t dur = id(uptime_s).state;
+        int dys = 0;
+        int hrs = 0;
+        int mnts = 0;
+        if (dur > 86399) {
+          dys = trunc(dur / 86400);
+          dur = dur - (dys * 86400);
+        }
+        if (dur > 3599) {
+          hrs = trunc(dur / 3600);
+          dur = dur - (hrs * 3600);
+        }
+        if (dur > 59) {
+          mnts = trunc(dur / 60);
+          dur = dur - (mnts * 60);
+        }
+        char buffer[17];
+        sprintf(buffer, "%ud %02uh %02um %02us", dys, hrs, mnts, dur);
+        return {buffer};
+    icon: mdi:clock-start
+    update_interval: 15s
+      
+      
+
+      
+
+
+switch:
+  - platform: restart
+    icon: mdi:reload-alert
+    name: "${devicename} Restart"      
